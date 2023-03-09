@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 03/08/2023 03:28:34 PM
+// Create Date: 03/09/2023 04:47:58 PM
 // Design Name: 
-// Module Name: Decryption_Core
+// Module Name: AES_256_Top_Module
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,25 +20,10 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module Decryption_Core(
-    input system_CLK,
-    input [127:0] Ciphertext,
+module AES_256_Top_Module(
     input [255:0] Key,
-    output [127:0] Plaintext
+    input [127:0] Text,
+    input CLK,
+    output [127:0] Results
     );
-    
-    wire CLK;  // Do we need clocking wizard?
-    
-    
-    
-   // always @(posedge CLK, RESET) begin
-    
-    
-    
-    
-    
-    
-    
-    
-    
 endmodule

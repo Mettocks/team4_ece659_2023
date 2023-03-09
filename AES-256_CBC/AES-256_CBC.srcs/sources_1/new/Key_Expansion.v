@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 03/08/2023 03:28:34 PM
+// Create Date: 03/09/2023 04:54:56 PM
 // Design Name: 
-// Module Name: Decryption_Core
+// Module Name: Key_Expansion
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,25 +20,8 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module Decryption_Core(
-    input system_CLK,
-    input [127:0] Ciphertext,
-    input [255:0] Key,
-    output [127:0] Plaintext
+module Key_Expansion(
+    input [127:0] Key,
+    output [17910:0] Expanded_Key
     );
-    
-    wire CLK;  // Do we need clocking wizard?
-    
-    
-    
-   // always @(posedge CLK, RESET) begin
-    
-    
-    
-    
-    
-    
-    
-    
-    
 endmodule
