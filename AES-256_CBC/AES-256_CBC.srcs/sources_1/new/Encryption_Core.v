@@ -36,25 +36,25 @@ module Encryption_Core(
     reg [255:0] Key_256; 
     
     
-    always@(posedge CLK, posedge REST) begin: Main_Circuit //Pulling in new Data or asynchronous RESET 
+    always@(posedge CLK, posedge RESET) begin: Main_Circuit //Pulling in new Data or asynchronous RESET 
     
     
-        if (RESET) begin: RESET_my_Circuit // RESET Circuit when XYZ
+        if (RESET) begin: Pull_Data // RESET Circuit when XYZ
     
             
-    
-    
-    
-  
-        end: RESET_my_Circuit
-    
-        else begin: Pull_Data
-    
             Key_256 <= Key;
             Key_128 <= Key[127:0]; 
             Pre_RND_TXT <= Plaintext ^ IV; // XOR w/ IV
+    
+    
   
         end: Pull_Data
+    
+        else begin: Encryption
+    
+
+  
+        end: Encryption
   
     end: Main_Circuit
     
