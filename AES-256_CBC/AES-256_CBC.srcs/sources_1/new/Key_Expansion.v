@@ -21,14 +21,17 @@
 
 
 module Key_Expansion(
+    input RESET,
     input CLK,
     input [255:0] Key,
-    output [15:0] Expanded_Key [127:0] //14 Generated 128-bit Keys
+    output [15:2] Expanded_Key [127:0] //14 Generated 128-bit Keys
     );
     
     //Declaring Register Values
     reg RESET;
    // reg Lower_Upper;
+   
+   reg [1:0] Expanded_Key [127:0];
    
    // Storing rcon in registers 
     reg [223:0] rcon  = 224'h0040002000100008000400020001;
@@ -46,10 +49,11 @@ module Key_Expansion(
     reg [5:0] loop_count;
     reg [2:0] XOR_count, rcon_count;
     reg [1:0] Key_Word_Select;
-    //reg [7:0][255:0] XYZ;
     
     reg [7:0] current_round_val [31:0]; 
-    reg [7:0] previous_round_val [31:0];
+  //  reg [7:0] previous_round_val [31:0];
+    
+    
     
     reg [1:0] Key_State;
     localparam Rotate_Left = 2'b00, Sub = 2'b01, XOR_w_prev = 2'b10, End_Round = 2'b11;
@@ -80,7 +84,7 @@ module Key_Expansion(
         
         else begin: expand_key
     
-           if (loop_count < 56) begin: key_loop 
+           if (Key_count < 14) begin: key_loop 
                
               if (XOR_count == 0) begin: Mod_Eight_Zero
     
@@ -106,7 +110,7 @@ module Key_Expansion(
                             Expanded_Key[Key_count][31:0] <= Expanded_key[key_count - 2][127:96] ^ current_round_val[0][31:0] ^ rcon[rcon_count*32 +: 32];   //can re-use this register?         
                             rcon_count <= rcon_count + 1;
                             XOR_count <= XOR_count + 1;                                                             
-                            //Key_state <= XOR_w_prev; //?
+                            Key_state <= sub; //?
                             
                          end
                                   
@@ -132,7 +136,8 @@ module Key_Expansion(
                          //   previous_round_val[0][31:0] <= previous_round_val[7][31:0] ^ current_round_val[0][31:0] ^ rcon_cycle[rcon_count][31:0];
                             Expanded_Key[Key_count][31:0] <= Expanded_Key[Key_count - 2][127:96] ^ current_round_val[0][31:0];  
                             //can re-use the expanded key register?         
-                            XOR_count <= XOR_count + 1;                                                             
+                            XOR_count <= XOR_count + 1;
+                            Key_State <= Rotate_Left;                                                             
                             
                             
                          end
@@ -167,15 +172,15 @@ module Key_Expansion(
                  
            end: key_loop
             
-           else begin
+        //   else begin
               
 
               
               
-                RESET <= 1;
+          //      RESET <= 1;
                 
               
-           end
+         //  end
             
         end: expand_key     
              
