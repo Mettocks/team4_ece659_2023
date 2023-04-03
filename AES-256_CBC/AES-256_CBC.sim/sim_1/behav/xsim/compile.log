@@ -1,0 +1,6 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "/home/akanksha/Documents/GitHub/team4_ece659_2023/AES-256_CBC/AES-256_CBC.srcs/sources_1/new/S-box.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module S_Box_32w
+INFO: [VRFC 10-311] analyzing module S_Box
+INFO: [VRFC 10-311] analyzing module S_Box_Seq
+INFO: [VRFC 10-2263] Analyzing Verilog file "/home/akanksha/Documents/GitHub/team4_ece659_2023/AES-256_CBC/AES-256_CBC.srcs/sim_1/new/sbox_tb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module sbox_tb

@@ -1,0 +1,10 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  \
+"../../../../AES-256_CBC.srcs/sources_1/new/S-box.v" \
+"../../../../AES-256_CBC.srcs/sim_1/new/sbox_tb.v" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort
