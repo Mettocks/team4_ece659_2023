@@ -30,13 +30,19 @@ module Key_Expansion(
     output [127:0] Expanded_Key_Seven, [127:0] Expanded_Key_Eight,
     output [127:0] Expanded_Key_Nine, [127:0] Expanded_Key_Ten,
     output [127:0] Expanded_Key_Eleven, [127:0] Expanded_Key_Twelve,
-    output [127:0] Expanded_Key_Thirteen, [127:0] Expanded_Key_Fourteen 
+    output [127:0] Expanded_Key_Thirteen, [127:0] Expanded_Key_Fourteen,
+   
+   //for simulation only
+    output [31:0] round_val,
+    output [4:0] KeyCount,
+    output [1:0] KeyState, 
+    output [2:0] XORCount, rconCount,
+    output WordSelect    
     //14 Generated 128-bit Keys
     );
     
     //Declaring Register Values
-    //reg RESET;
-   // reg Lower_Upper;
+ //   reg RESET;
    
    
   
@@ -44,14 +50,12 @@ module Key_Expansion(
    
    
    // Storing rcon in registers 
-    reg [223:0] rcon = 224'h0040002000100008000400020001;
- //   wire [6:0] rcon_cycle [31:0];
+    reg [223:0] rcon = 224'h004000200100008000400020001; 
+       
+    //reg [255:0] Key = 256'h4ffd41903a0189d27d8016b370c253f11877d7580fea37b2eb17ac5101bed306; 
+   
     genvar j, m;  
     
-//        for (m=0; m<7; m = m + 1) begin
-//             assign rcon_cycle[m][31:0] = rcon[m*32 +: 32];
-    
-//        end
             
     assign Expanded_Key_One = Temp_Expanded_Key[2];
     assign Expanded_Key_Two = Temp_Expanded_Key[3];
@@ -67,71 +71,75 @@ module Key_Expansion(
     assign Expanded_Key_Twelve = Temp_Expanded_Key[13];
     assign Expanded_Key_Thirteen = Temp_Expanded_Key[14];
     assign Expanded_Key_Fourteen = Temp_Expanded_Key[15];
-   // integer i,k;        
+    
+    //for Simulation ONLY
+    assign round_val = current_round_val; 
+    assign KeyCount = Key_count;
+    assign XORCount = XOR_count;
+    assign rconCount = rcon_count; 
+    assign WordSelect = Upper_XOR;
+    assign  KeyState = Key_State;
     
     
-    reg [3:0] Key_count;
+    
+    integer i;        
+
+    reg [4:0] Key_count;
     reg [2:0] XOR_count, rcon_count;
-    reg [1:0] Key_Word_Select;
+
+    reg Upper_XOR;
+
     
     reg [31:0] current_round_val;
     
     wire [31:0] temp_val_zero;
     
-    wire [31:0] temp_val_four [6:0]; 
-   //reg temp_val_zero [31:0];   
+    wire [31:0] temp_val_four [6:0];  
     
     reg [1:0] Key_State;
     localparam Rotate_Left = 2'b00, Sub = 2'b01, XOR_w_prev = 2'b10, End_Round = 2'b11;
+  
+    S_Box_32w S_Mod_Zero (current_round_val, temp_val_zero);
    
-   
-  // if (Key_State == Sub) begin
-    S_Box_32w S_Mod_Zero (CLK, current_round_val, temp_val_zero);
+    S_Box_32w S_Mod_Four_0 (Temp_Expanded_Key[2][127:96], temp_val_four[0][31:0]);
+    S_Box_32w S_Mod_Four_1 (Temp_Expanded_Key[4][127:96], temp_val_four[1][31:0]);
+    S_Box_32w S_Mod_Four_2 (Temp_Expanded_Key[6][127:96], temp_val_four[2][31:0]);
+    S_Box_32w S_Mod_Four_3 (Temp_Expanded_Key[8][127:96], temp_val_four[3][31:0]);
+    S_Box_32w S_Mod_Four_4 (Temp_Expanded_Key[10][127:96], temp_val_four[4][31:0]);
+    S_Box_32w S_Mod_Four_5 (Temp_Expanded_Key[12][127:96], temp_val_four[5][31:0]);
+    S_Box_32w S_Mod_Four_6 (Temp_Expanded_Key[14][127:96], temp_val_four[6][31:0]);
     
-//    generate 
-//        for (j = 0; j<6; j = j+1) begin: 
-//            S_Box_32w S_Mod_Four (Temp_Expanded_Key[(j*2)+2][127:96], temp_val_four[j][31:0]);
-//        end
-//    endgenerate 
-   
-    S_Box_32w S_Mod_Four_0 (CLK, Temp_Expanded_Key[2][127:96], temp_val_four[0][31:0]);
-    S_Box_32w S_Mod_Four_1 (CLK, Temp_Expanded_Key[4][127:96], temp_val_four[1][31:0]);
-    S_Box_32w S_Mod_Four_2 (CLK, Temp_Expanded_Key[6][127:96], temp_val_four[2][31:0]);
-    S_Box_32w S_Mod_Four_3 (CLK, Temp_Expanded_Key[8][127:96], temp_val_four[3][31:0]);
-    S_Box_32w S_Mod_Four_4 (CLK, Temp_Expanded_Key[10][127:96], temp_val_four[4][31:0]);
-    S_Box_32w S_Mod_Four_5 (CLK, Temp_Expanded_Key[12][127:96], temp_val_four[5][31:0]);
-    S_Box_32w S_Mod_Four_6 (CLK, Temp_Expanded_Key[14][127:96], temp_val_four[6][31:0]);
-    
-
-   
-   
-   
-   
+  
     always@(posedge CLK, posedge RESET) begin: main_module //Pulling in new Data or asynchronous RESET 
     
     
-        if (RESET) begin: pull_data // RESET Circuit when XYZ
+        if (RESET) begin: pull_data // RESET and initialize circuit.
     
-      //  Rotate_Left_Once(CLK, Key[255:224], current_round_val); // Is this correct?
-        current_round_val[7:0] <= Key[239:232];
-        current_round_val[15:8] <= Key[247:240];
-        current_round_val[23:16] <= Key[255:248];
-        current_round_val[31:24] <= Key[231:224];
+            current_round_val[7:0] <= Key[239:232];
+            current_round_val[15:8] <= Key[247:240];
+            current_round_val[23:16] <= Key[255:248];
+            current_round_val[31:24] <= Key[231:224];
         
         
-        //loop_count <= 0;
-        Key_State <= Sub;
-        XOR_count <= 0;
-        Key_count <= 2;
-        Temp_Expanded_Key[0][127:0] <= Key[127:0]; //Double check?
-        Temp_Expanded_Key[1][127:0] <= Key[255:128];
+            rcon_count <= 0; 
+            Key_State <= Sub;
+            XOR_count <= 0;
+            Key_count <= 2;
+            Temp_Expanded_Key[0][127:0] <= Key[127:0]; 
+            Temp_Expanded_Key[1][127:0] <= Key[255:128];
+        
+            for (i=2; i < 16; i = i + 1) begin
+        
+                Temp_Expanded_Key[i][127:0] <= 0;
+        
+            end
         
     
         end: pull_data
         
         else begin: expand_key
     
-           if (Key_count < 14) begin: key_loop 
+           if (Key_count < 16) begin: key_loop 
                
               if (XOR_count == 0) begin: Mod_Eight_Zero
     
@@ -151,9 +159,7 @@ module Key_Expansion(
                         end
                   
                         Sub: begin 
-                            
-                            
-                            //S_Box_32w S_Mod_Zero (current_round_val, current_round_val);
+                                                      
                             current_round_val <= temp_val_zero;
                             
                             Key_State <= XOR_w_prev;
@@ -184,25 +190,25 @@ module Key_Expansion(
                             //S_Box_32w  S_Mod_Four (Temp_Expanded_Key[Key_count - 1][127:96], current_round_val);
                             case(rcon_count)
                             
-                               3'b000:                      
+                               3'b001:                      
                                   current_round_val <= temp_val_four[0];
                       
-                               3'b001:                             
+                               3'b010:                             
                                   current_round_val <= temp_val_four[1];
 
-                               3'b010:                             
+                               3'b011:                             
                                   current_round_val <= temp_val_four[2];
                                  
-                               3'b011:                             
+                               3'b100:                             
                                   current_round_val <= temp_val_four[3];                                
 
-                               3'b100:                             
+                               3'b101:                             
                                   current_round_val <= temp_val_four[4];
                                  
-                               3'b101:                            
+                               3'b110:                            
                                   current_round_val <= temp_val_four[5];
 
-                               3'b110:                            
+                               3'b111:                            
                                   current_round_val <= temp_val_four[6];
                                                                                     
                              endcase
@@ -227,10 +233,11 @@ module Key_Expansion(
               
               else begin: XOR_Word
               
-                   if (XOR_count == 3) begin
+                   if (XOR_count == 3 ) begin
                    
                        Key_count <= Key_count + 1;
-                       XOR_count <= XOR_count + 1; 
+                       XOR_count <= XOR_count + 1;
+                       Upper_XOR <= 1; 
                   
                    end
                   
@@ -238,6 +245,7 @@ module Key_Expansion(
                    
                        Key_count <= Key_count + 1; 
                        XOR_count <= 0;
+                       Upper_XOR <= 0;
                        
                    end   
                        
@@ -247,7 +255,7 @@ module Key_Expansion(
                     
                    end
                    
-                Temp_Expanded_Key[Key_count][31:0] <= Temp_Expanded_Key[Key_count - 2][XOR_count*32 +: 32] ^ Temp_Expanded_Key[Key_count][(XOR_count - 1)*32 +: 32];    
+                Temp_Expanded_Key[Key_count][(XOR_count - 4*Upper_XOR)*32 +:32] <= Temp_Expanded_Key[Key_count - 2][(XOR_count - 4*Upper_XOR)*32 +: 32] ^ Temp_Expanded_Key[Key_count][((XOR_count - 4*Upper_XOR) - 1)*32 +: 32];    
                        
               end: XOR_Word
                  
@@ -256,31 +264,36 @@ module Key_Expansion(
         end: expand_key     
              
     end: main_module
+
+//vio_0 Testing (
+//  .clk(CLK),                // input wire clk
+//  .probe_in0(Key),    // input wire [255 : 0] probe_in0
+//  .probe_in1(Temp_Expanded_Key[0]),    // input wire [127 : 0] probe_in1
+//  .probe_in2(Temp_Expanded_Key[1]),    // input wire [127 : 0] probe_in2
+//  .probe_in3(Temp_Expanded_Key[2]),    // input wire [127 : 0] probe_in3
+//  .probe_in4(Temp_Expanded_Key[3]),    // input wire [127 : 0] probe_in4
+//  .probe_in5(Temp_Expanded_Key[4]),    // input wire [127 : 0] probe_in5
+//  .probe_in6(Temp_Expanded_Key[5]),    // input wire [127 : 0] probe_in6
+//  .probe_in7(Temp_Expanded_Key[6]),    // input wire [127 : 0] probe_in7
+//  .probe_in8(Temp_Expanded_Key[7]),    // input wire [127 : 0] probe_in8
+//  .probe_in9(Temp_Expanded_Key[8]),    // input wire [127 : 0] probe_in9
+//  .probe_in10(Temp_Expanded_Key[9]),  // input wire [127 : 0] probe_in10
+//  .probe_in11(Temp_Expanded_Key[10]),  // input wire [127 : 0] probe_in11
+//  .probe_in12(Temp_Expanded_Key[11]),  // input wire [127 : 0] probe_in12
+//  .probe_in13(Temp_Expanded_Key[12]),  // input wire [127 : 0] probe_in13
+//  .probe_in14(Temp_Expanded_Key[13]),  // input wire [127 : 0] probe_in14
+//  .probe_in15(Temp_Expanded_Key[14]),  // input wire [127 : 0] probe_in15
+//  .probe_in16(Temp_Expanded_Key[15]),  // input wire [127 : 0] probe_in16
+//  .probe_in17(current_round_val),  // input wire [31 : 0] probe_in17
+//  .probe_in18(Key_count),  // input wire [4 : 0] probe_in18
+//  .probe_in19(XOR_count),  // input wire [2 : 0] probe_in19
+//  .probe_in20(rcon_count),  // input wire [2 : 0] probe_in20
+//  .probe_in21(Key_State),  // input wire [1 : 0] probe_in21
+//  .probe_out0(RESET)  // output wire [0 : 0] probe_out0
+//);
     
 endmodule
 
 
-
-//blocking or non_blocking?? Is this correct?
-
-//module Rotate_Left_Once(
-//    input CLK,
-//    input [31:0] word_in,
-//    output reg [31:0] word_out);
-    
- 
-  
-//    always @(posedge CLK) begin  
-    
-   
-//       word_out[7:0] <= word_in[15:8];
-//       word_out[15:8] <= word_in[23:16];
-//       word_out[23:16] <= word_in[31:24];
-//       word_out[31:24] <= word_in[7:0];
-        
-    
-//    end 
-   
-//endmodule
 
 
