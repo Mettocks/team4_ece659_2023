@@ -26,33 +26,111 @@
 // 32 Bit width SBox (4 Sbox in parallel)
 module S_Box_32w(
     input [31:0] Word_In,
-    output [31:0] Word_Out
+    output reg [31:0] Word_Out
     );
 
+
+
+    wire [31:0] Word;
     // MSB
     S_Box S_Box3(
         .Byte_In (Word_In[31:24]),
-        .Byte_Out(Word_Out[31:24])
+        .Byte_Out(Word[31:24])
     );
 
     // MSB - 1
     S_Box S_Box2(
         .Byte_In(Word_In[23:16]),
-        .Byte_Out(Word_Out[23:16])
+        .Byte_Out(Word[23:16])
     );
 
     // LSB + 1
     S_Box S_Box1(
         .Byte_In(Word_In[15:8]),
-        .Byte_Out(Word_Out[15:8])
+        .Byte_Out(Word[15:8])
     );
 
     // LSB
     S_Box S_Box0(
         .Byte_In(Word_In[7:0]),
-        .Byte_Out(Word_Out[7:0])
+        .Byte_Out(Word[7:0])
     );
+    
+    always @(*) begin
+        Word_Out = Word;
+    end
 
+endmodule
+
+
+module Full_Array_Sbox(
+    input [127:0] in_state,
+    output reg [127:0] out_state
+    );
+    
+    
+    wire [127:0] state;
+    
+    S_Box_32w SubBytes0(
+        .Word_In(in_state[127:96]),
+        .Word_Out(state[127:96])
+    );
+    
+    S_Box_32w SubBytes1(
+        .Word_In(in_state[95:64]),
+        .Word_Out(state[95:64])
+    );
+    
+    S_Box_32w SubBytes2(
+        .Word_In(in_state[63:32]),
+        .Word_Out(state[63:32])
+    );
+    
+    S_Box_32w SubBytes3(
+        .Word_In(in_state[31:0]),
+        .Word_Out(state[31:0])
+    );
+    
+    
+    always @(*) begin
+        out_state = state;
+    end
+    
+    
+endmodule
+
+
+
+module Compact_Array_SBox(
+    input [127:0] in_state,
+    output reg [127:0] out_state
+    );
+    
+    
+    reg [127:0] state;
+    
+    
+    
+    integer i; // for loop var
+    reg [31:0] Sub_Input;
+    wire [31:0] Sub_Output;
+    // Intialization of modules
+    S_Box_32w SubBytes(
+        .Word_In(Sub_Input),
+        .Word_Out(Sub_Output)
+    );
+    
+    always @(*) begin
+        state = in_state;
+        //for(i = 0; i < 4; i = i + 1) begin // need to shift state by 4 times to keep only 1 SBox in use
+            Sub_Input = state[31:0];
+            state[31:0] = Sub_Output;
+            //state = (state << 32) | (state >> 96); // Circular shift left by 32 bits       
+        //end
+        out_state = state;
+    end
+    
+    
 endmodule
 
 
