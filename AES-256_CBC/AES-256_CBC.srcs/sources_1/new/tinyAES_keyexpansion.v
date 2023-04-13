@@ -38,7 +38,7 @@ module tinyAES_keyexpansion(
     wire   [127:0] k0b, k1b, k2b, k3b, k4b, k5b, k6b, k7b, k8b,
                    k9b, k10b, k11b, k12b, k13b;
 
-    wire [127:0] nothing_wire;
+    wire [255:0] nothing_wire;
 
     always @ (posedge clk) begin
         k0 <= key;
@@ -56,7 +56,7 @@ module tinyAES_keyexpansion(
         a7 (clk, k7, 8'h8, k8, k7b),
         a9 (clk, k9, 8'h10, k10, k9b),
         a11 (clk, k11, 8'h20, k12, k11b),
-        a13 (clk, k13, 8'h40,  nothing_wire, k13b);
+        a13 (clk, k13, 8'h40, nothing_wire, k13b);
 
     expand_key_type_B_256
         a2 (clk, k2, k3, k2b),

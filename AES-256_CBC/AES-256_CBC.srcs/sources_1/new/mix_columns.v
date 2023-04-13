@@ -176,8 +176,8 @@ module gf_mult(
     
     always @(*) begin
         case (c)
-            8'h02: out = double(b); // 2b
-            8'h03: out = double(b) ^ b; // 3b = 2b + b
+            8'h02: out <= double(b); // 2b
+            8'h03: out <= double(b) ^ b; // 3b = 2b + b
         endcase
     end
 
