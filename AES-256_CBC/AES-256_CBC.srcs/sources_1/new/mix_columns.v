@@ -139,35 +139,59 @@ module gf_mat_mul(
     );
 
     wire [7:0] i1c1, i1c2, i2c1, i2c2, i3c1, i3c2, i4c1, i4c2;
-    gf_mult 
-        c11(column[31:24], 8'h02, i1c1),
-        c21(column[23:16], 8'h03, i1c2);
+    gf_mult_02 c11(column[31:24], i1c1);
+    gf_mult_03 c21(column[23:16], i1c2);
     assign out[31:24] = i1c1 ^ i1c2 ^ column[15:8] ^ column[7:0] ;
     
  //wire [7:0] i2c1, i2c2;
-    gf_mult 
-        c12(column[23:16], 8'h02, i2c1),
-        c22(column[15:8], 8'h03, i2c2);
+    gf_mult_02 c12(column[23:16], i2c1);
+    gf_mult_03 c22(column[15:8], i2c2);
     assign out[23:16] = column[31:24]^ i2c2 ^ i2c1 ^ column[7:0] ;
 
  //wire [7:0] i3c1, i3c2;
-    gf_mult 
-        c13(column[15:8], 8'h02, i3c1),
-        c23(column[7:0], 8'h03, i3c2);
+    gf_mult_02 c13(column[15:8], i3c1);
+    gf_mult_03 c23(column[7:0], i3c2);
 
     assign out[15:8] = column[31:24] ^ column[23:16]^ i3c1 ^ i3c2;
     
 // wire [7:0] i4c1, i4c2;
-    gf_mult 
-        c14(column[31:24], 8'h03, i4c1),
-        c24(column[7:0], 8'h02, i4c2);
+    gf_mult_03 c14(column[31:24], i4c1);
+    gf_mult_02 c24(column[7:0], i4c2);
     assign out[7:0] = i4c1 ^ column[23:16] ^ column[15:8] ^ i4c2;
 
 endmodule
 
 
+module gf_mult_02(    
+    input [7:0] b, // the byte from the input array/column
+    output reg [7:0] out
+    );
+    
+    always @(*) begin
+        out <= double(b); // 2b   
+    end
 
+    function integer double (input [7:0] x);
+        double = (x << 1) ^ (8'h1b & -(x >> 7));
+    endfunction
+endmodule
 
+module gf_mult_03(
+    input [7:0] b, // the byte from the input array/column
+    output reg [7:0] out
+    );
+    
+    always @(*) begin
+        out <= double(b) ^ b; // 3b = 2b + b 
+    end
+
+    function integer double (input [7:0] x);
+        double = (x << 1) ^ (8'h1b & -(x >> 7));
+    endfunction
+
+endmodule
+
+/*
 module gf_mult(
     input [7:0] b, // the byte from the input array/column
     input [7:0] c, // constant
@@ -186,3 +210,4 @@ module gf_mult(
     endfunction
 
 endmodule
+*/

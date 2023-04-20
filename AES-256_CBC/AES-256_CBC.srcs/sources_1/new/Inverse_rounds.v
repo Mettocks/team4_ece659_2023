@@ -32,125 +32,113 @@
 // This loop structure does require sequentiality, since each round relies on the last
 //
 // This
-module cipher_round(
+  
+
+// Inverse
+
+
+module Inv_cipher_round(
     input [127:0] in_state,
     input [127:0] round_key,
     output reg [127:0] out_state
     );
-    
+
     reg [127:0] state; // memory for internal operations on state
-    
-    
-    /***** SubBytes init  *****/
-    integer i; // for loop var
-    reg [127:0] Sub_Input;
-    wire [127:0] Sub_Output;
-    // Intialization of modules
-    Full_Array_Sbox SubBytes(
-        .in_state(Sub_Input),
-        .out_state(Sub_Output)
-    );
-    
-    /***** ShiftRows init  *****/
-    
+
+
+    /***** InvShiftRows init  *****/
     reg [127:0] Shift_Input;
     wire [127:0] Shift_Output;
-    shift_rows ShiftRows(
+    Inv_shift_rows InvShiftRows(
         .in_state(Shift_Input),
         .shifted_state(Shift_Output)
         );
+        
+
+    /***** InvSubBytes init  *****/
+    reg [127:0] Sub_Input;
+    wire [127:0] Sub_Output;
+    // Intialization of modules
+    Inv_Full_Array_Sbox InvSubBytes(
+        .in_state(Sub_Input),
+        .out_state(Sub_Output)
+        );
     
-    /***** MixColumns init *****/
+
     
-    
+    /***** InvMixColumns init *****/
     reg [127:0] Mix_Input;
     wire [127:0] Mix_Output;
-    mix_columns MixColumns(
+    Inv_mix_columns InvMixColumns(
         .in_state(Mix_Input),
         .out_state(Mix_Output) 
-    );
-    
-    
-    /***** Procedural block *****/
-    always @(*) begin // blocking assignments   
-        // init
-        
-        state = in_state; // assign in_state to state   
-        
-        // SubBytes
+        );
+
+
+    always @(*) begin
+        state = in_state;
+
+        // InvShiftRows
+        Shift_Input = state;
+        state = Shift_Output;
+
+        // InvSubBytes
         Sub_Input = state;
         state = Sub_Output;
 
-        // ShiftRows
-        Shift_Input = state;
-        state = Shift_Output;
-        
-        // MixColumns
-        Mix_Input = state;
-        state = Mix_Output;
-        
         // AddRoundKey
-        out_state = state ^ round_key; // straight forward enough, XOR state to round_key to get final state
-      
-        
+        state = state ^ round_key; // straight forward enough, XOR state to round_key to get final state
+
+        // InvMixColumns
+        Mix_Input = state;
+        out_state = Mix_Output;
+ 
     end
 
 endmodule
 
-// Same as round, except discludes the Mixcolumns step
-module cipher_final_round(
+
+module Inv_cipher_final_round(
     input [127:0] in_state,
     input [127:0] round_key,
     output reg [127:0] out_state
     );
-    
+
     reg [127:0] state; // memory for internal operations on state
-    
-    
-    /***** SubBytes init  *****/
-    integer i; // for loop var
-    reg [127:0] Sub_Input;
-    wire [127:0] Sub_Output;
-    // Intialization of modules
-    Full_Array_Sbox SubBytes(
-        .in_state(Sub_Input),
-        .out_state(Sub_Output)
-    );
-    
-    /***** ShiftRows init  *****/
-    
+
+    /***** InvShiftRows init  *****/
     reg [127:0] Shift_Input;
     wire [127:0] Shift_Output;
-    shift_rows ShiftRows(
+    Inv_shift_rows InvShiftRows(
         .in_state(Shift_Input),
         .shifted_state(Shift_Output)
         );
+
+    /***** InvSubBytes init  *****/
+    reg [127:0] Sub_Input;
+    wire [127:0] Sub_Output;
+    // Intialization of modules
+    Inv_Full_Array_Sbox InvSubBytes(
+        .in_state(Sub_Input),
+        .out_state(Sub_Output)
+        );
     
-    
-    /***** Procedural block *****/
-    always @(*) begin // blocking assignments   
-        // init
-        
-        state = in_state; // assign in_state to state   
-        
-        // SubBytes
+    always @(*) begin
+        state = in_state;
+
+        // InvShiftRows
+        Shift_Input = state;
+        state = Shift_Output;
+
+        // InvSubBytes
         Sub_Input = state;
         state = Sub_Output;
 
-        // ShiftRows
-        Shift_Input = state;
-        state = Shift_Output;
-        
-        // No mixcolumns on final round
-        
         // AddRoundKey
         out_state = state ^ round_key; // straight forward enough, XOR state to round_key to get final state
-      
-        
+
+        // No InvMixColumns on final round
+
     end
-    
-    
+
 endmodule
-
-
-

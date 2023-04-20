@@ -23,6 +23,42 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
+module Full_Array_Sbox(
+    input [127:0] in_state,
+    output reg [127:0] out_state
+    );
+    
+    
+    wire [127:0] state;
+    
+    S_Box_32w SubBytes0(
+        .Word_In(in_state[127:96]),
+        .Word_Out(state[127:96])
+    );
+    
+    S_Box_32w SubBytes1(
+        .Word_In(in_state[95:64]),
+        .Word_Out(state[95:64])
+    );
+    
+    S_Box_32w SubBytes2(
+        .Word_In(in_state[63:32]),
+        .Word_Out(state[63:32])
+    );
+    
+    S_Box_32w SubBytes3(
+        .Word_In(in_state[31:0]),
+        .Word_Out(state[31:0])
+    );
+    
+    
+    always @(*) begin
+        out_state = state;
+    end
+    
+    
+endmodule
+
 // 32 Bit width SBox (4 Sbox in parallel)
 module S_Box_32w(
     input [31:0] Word_In,
@@ -63,41 +99,7 @@ module S_Box_32w(
 endmodule
 
 
-module Full_Array_Sbox(
-    input [127:0] in_state,
-    output reg [127:0] out_state
-    );
-    
-    
-    wire [127:0] state;
-    
-    S_Box_32w SubBytes0(
-        .Word_In(in_state[127:96]),
-        .Word_Out(state[127:96])
-    );
-    
-    S_Box_32w SubBytes1(
-        .Word_In(in_state[95:64]),
-        .Word_Out(state[95:64])
-    );
-    
-    S_Box_32w SubBytes2(
-        .Word_In(in_state[63:32]),
-        .Word_Out(state[63:32])
-    );
-    
-    S_Box_32w SubBytes3(
-        .Word_In(in_state[31:0]),
-        .Word_Out(state[31:0])
-    );
-    
-    
-    always @(*) begin
-        out_state = state;
-    end
-    
-    
-endmodule
+
 
 
 
