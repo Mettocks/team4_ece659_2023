@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module shift_rows(
+module Inv_shift_rows(
     input [127:0] in_state,
     output reg [127:0] shifted_state
     );
@@ -38,19 +38,19 @@ module shift_rows(
     assign s02 = in_state[63:56]; // byte 8
     assign s03 = in_state[31:24]; // byte 12
 
-    // second row, circular shift over one byte
+    // second row
     assign s10 = in_state[119:112]; // byte 1
     assign s11 = in_state[87:80]; // byte 5 
     assign s12 = in_state[55:48]; // byte 9 
     assign s13 = in_state[23:16]; // byte 13  
 
-    // third row, circular shift two bytes
+    // third row
     assign s20 = in_state[111:104]; // byte 2 
     assign s21 = in_state[79:72]; // byte 6 
     assign s22 = in_state[47:40]; // byte 10 
     assign s23 = in_state[15:8]; // byte 14 
 
-    // fourth row, circular shift three bytes
+    // fourth row
     assign s30 = in_state[103:96]; // byte 3 
     assign s31 = in_state[71:64]; // byte 7 
     assign s32 = in_state[39:32]; // byte 11 
@@ -60,11 +60,17 @@ module shift_rows(
     always @(*) begin
 
         // If you are comparing this to the FIP 197 document in Figure 8, due to the indexing, 
-        // imagine the figure 8 array is transposed from bottom left to top right corner
-        shifted_state = {s00, s11, s22, s33,
-                         s01, s12, s23, s30,
-                         s02, s13, s20, s31,
-                         s03, s10, s21, s32};
+        // imagine the figure 8 array is transposed from bottom left to top right corner        
+        shifted_state = {s00, s13, s22, s31,
+                         s01, s10, s23, s32,
+                         s02, s11, s20, s33,
+                         s03, s12, s21, s30};
+
+        // cipher mix columns
+        // shifted_state = {s00, s11, s22, s33,
+        //                  s01, s12, s23, s30,
+        //                  s02, s13, s20, s31,
+        //                  s03, s10, s21, s32};
                          
     
     end
