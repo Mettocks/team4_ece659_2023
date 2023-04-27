@@ -28,10 +28,8 @@ module shift_rows(
     wire [7:0] s00, s01, s02, s03,
                s10, s11, s12, s13,
                s20, s21, s22, s23,
-               s30, s31, s32, s33;
-               
+               s30, s31, s32, s33;           
     
-    //formula: [8*i + 7 : 8*i] where i is the byte index given that the 128-bit block is divided in the 4x4 array
     // First row, no change
     assign s00 = in_state[127:120]; // byte 0 MSB
     assign s01 = in_state[95:88]; // byte 4
@@ -59,8 +57,9 @@ module shift_rows(
     
     always @(*) begin
 
-        // If you are comparing this to the FIP 197 document in Figure 8, due to the indexing, 
-        // imagine the figure 8 array is transposed from bottom left to top right corner
+        // If you are comparing this to the FIP 197 document in Figure 8,
+        // due to the indexing, imagine the figure 8 array is transposed
+        //  from bottom left to top right corner
         shifted_state = {s00, s11, s22, s33,
                          s01, s12, s23, s30,
                          s02, s13, s20, s31,

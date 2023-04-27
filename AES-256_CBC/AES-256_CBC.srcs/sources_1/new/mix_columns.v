@@ -22,18 +22,22 @@
 
 module mix_columns(
     input [127:0] in_state, 
-    output wire [127:0] out_state
+    output reg [127:0] out_state
     );
 
-
+    wire [127:0] temp_out_state;
 
     gf_mat_mul 
-                col1(.column(in_state[127:96]), .out(out_state[127:96])), 
-                col2(.column(in_state[95:64]), .out(out_state[95:64])), 
-                col3(.column(in_state[63:32]), .out(out_state[63:32])), 
-                col4(.column(in_state[31:0]), .out(out_state[31:0]));
+                col1(.column(in_state[127:96]), .out(temp_out_state[127:96])), 
+                col2(.column(in_state[95:64]), .out(temp_out_state[95:64])), 
+                col3(.column(in_state[63:32]), .out(temp_out_state[63:32])), 
+                col4(.column(in_state[31:0]), .out(temp_out_state[31:0]));
 
 
+
+    always @(*) begin
+        out_state <= temp_out_state;
+    end
 
 
 //  wire [7:0] m1c1, m1c2, m2c1, m2c2, m3c1, m3c2, m4c1, m4c2;
@@ -135,29 +139,35 @@ endmodule
 
 module gf_mat_mul(
     input [31:0] column,
-    output [31:0] out
+    output reg [31:0] out
     );
+
+    wire [31:0] out_column;
 
     wire [7:0] i1c1, i1c2, i2c1, i2c2, i3c1, i3c2, i4c1, i4c2;
     gf_mult_02 c11(column[31:24], i1c1);
     gf_mult_03 c21(column[23:16], i1c2);
-    assign out[31:24] = i1c1 ^ i1c2 ^ column[15:8] ^ column[7:0] ;
+    assign out_column[31:24] = i1c1 ^ i1c2 ^ column[15:8] ^ column[7:0] ;
     
  //wire [7:0] i2c1, i2c2;
     gf_mult_02 c12(column[23:16], i2c1);
     gf_mult_03 c22(column[15:8], i2c2);
-    assign out[23:16] = column[31:24]^ i2c2 ^ i2c1 ^ column[7:0] ;
+    assign out_column[23:16] = column[31:24]^ i2c2 ^ i2c1 ^ column[7:0] ;
 
  //wire [7:0] i3c1, i3c2;
     gf_mult_02 c13(column[15:8], i3c1);
     gf_mult_03 c23(column[7:0], i3c2);
 
-    assign out[15:8] = column[31:24] ^ column[23:16]^ i3c1 ^ i3c2;
+    assign out_column[15:8] = column[31:24] ^ column[23:16]^ i3c1 ^ i3c2;
     
 // wire [7:0] i4c1, i4c2;
     gf_mult_03 c14(column[31:24], i4c1);
     gf_mult_02 c24(column[7:0], i4c2);
-    assign out[7:0] = i4c1 ^ column[23:16] ^ column[15:8] ^ i4c2;
+    assign out_column[7:0] = i4c1 ^ column[23:16] ^ column[15:8] ^ i4c2;
+    
+    always @(*) begin
+        out <= out_column;
+    end
 
 endmodule
 

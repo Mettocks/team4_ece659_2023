@@ -23,13 +23,13 @@
 module tinyAES_keyexpansion(
     input clk,
     input [255:0] key,
-    output [127:0] Expanded_Key_One, [127:0] Expanded_Key_Two, 
-    output [127:0] Expanded_Key_Three, [127:0] Expanded_Key_Four, 
-    output [127:0] Expanded_Key_Five, [127:0] Expanded_Key_Six,
-    output [127:0] Expanded_Key_Seven, [127:0] Expanded_Key_Eight,
-    output [127:0] Expanded_Key_Nine, [127:0] Expanded_Key_Ten,
-    output [127:0] Expanded_Key_Eleven, [127:0] Expanded_Key_Twelve,
-    output [127:0] Expanded_Key_Thirteen, [127:0] Expanded_Key_Fourteen
+    output reg [127:0] Expanded_Key_One,        reg [127:0] Expanded_Key_Two, 
+    output reg [127:0] Expanded_Key_Three,      reg [127:0] Expanded_Key_Four, 
+    output reg [127:0] Expanded_Key_Five,       reg [127:0] Expanded_Key_Six,
+    output reg [127:0] Expanded_Key_Seven,      reg [127:0] Expanded_Key_Eight,
+    output reg [127:0] Expanded_Key_Nine,       reg [127:0] Expanded_Key_Ten,
+    output reg [127:0] Expanded_Key_Eleven,     reg [127:0] Expanded_Key_Twelve,
+    output reg [127:0] Expanded_Key_Thirteen,   reg [127:0] Expanded_Key_Fourteen
     );
 
     reg    [255:0] k0, k0a, k1;
@@ -41,45 +41,68 @@ module tinyAES_keyexpansion(
     wire [255:0] nothing_wire;
 
     always @ (posedge clk) begin
-        k0 <= key;
+        k0  <= key;
         k0a <= k0;
-        k1 <= k0a;
+        k1  <= k0a;
     end
     
 
     assign k0b = k0a[127:0];
 
     expand_key_type_A_256
-        a1 (clk, k1, 8'h1, k2, k1b),
-        a3 (clk, k3, 8'h2, k4, k3b),
-        a5 (clk, k5, 8'h4, k6, k5b),
-        a7 (clk, k7, 8'h8, k8, k7b),
-        a9 (clk, k9, 8'h10, k10, k9b),
+        a1  (clk, k1,  8'h1,  k2,  k1b),
+        a3  (clk, k3,  8'h2,  k4,  k3b),
+        a5  (clk, k5,  8'h4,  k6,  k5b),
+        a7  (clk, k7,  8'h8,  k8,  k7b),
+        a9  (clk, k9,  8'h10, k10, k9b),
         a11 (clk, k11, 8'h20, k12, k11b),
         a13 (clk, k13, 8'h40, nothing_wire, k13b);
 
     expand_key_type_B_256
-        a2 (clk, k2, k3, k2b),
-        a4 (clk, k4, k5, k4b),
-        a6 (clk, k6, k7, k6b),
-        a8 (clk, k8, k9, k8b),
+        a2  (clk, k2,  k3,  k2b),
+        a4  (clk, k4,  k5,  k4b),
+        a6  (clk, k6,  k7,  k6b),
+        a8  (clk, k8,  k9,  k8b),
         a10 (clk, k10, k11, k10b),
         a12 (clk, k12, k13, k12b);
 
-    assign Expanded_Key_One         = k0b;
-    assign Expanded_Key_Two         = k1b;
-    assign Expanded_Key_Three       = k2b;
-    assign Expanded_Key_Four        = k3b;
-    assign Expanded_Key_Five        = k4b;
-    assign Expanded_Key_Six         = k5b;
-    assign Expanded_Key_Seven       = k6b;
-    assign Expanded_Key_Eight       = k7b;
-    assign Expanded_Key_Nine        = k8b;
-    assign Expanded_Key_Ten         = k9b;
-    assign Expanded_Key_Eleven      = k10b;
-    assign Expanded_Key_Twelve      = k11b;
-    assign Expanded_Key_Thirteen    = k12b;
-    assign Expanded_Key_Fourteen    = k13b;
+    wire [127:0] Expanded_Key_One_wire, Expanded_Key_Two_wire, Expanded_Key_Three_wire,
+    Expanded_Key_Four_wire, Expanded_Key_Five_wire, Expanded_Key_Six_wire,
+    Expanded_Key_Seven_wire, Expanded_Key_Eight_wire, Expanded_Key_Nine_wire, Expanded_Key_Ten_wire,
+    Expanded_Key_Eleven_wire, Expanded_Key_Twelve_wire, Expanded_Key_Thirteen_wire, Expanded_Key_Fourteen_wire;
+
+    assign Expanded_Key_One_wire         = k0b;
+    assign Expanded_Key_Two_wire         = k1b;
+    assign Expanded_Key_Three_wire       = k2b;
+    assign Expanded_Key_Four_wire        = k3b;
+    assign Expanded_Key_Five_wire        = k4b;
+    assign Expanded_Key_Six_wire         = k5b;
+    assign Expanded_Key_Seven_wire       = k6b;
+    assign Expanded_Key_Eight_wire       = k7b;
+    assign Expanded_Key_Nine_wire        = k8b;
+    assign Expanded_Key_Ten_wire         = k9b;
+    assign Expanded_Key_Eleven_wire      = k10b;
+    assign Expanded_Key_Twelve_wire      = k11b;
+    assign Expanded_Key_Thirteen_wire    = k12b;
+    assign Expanded_Key_Fourteen_wire    = k13b;
+    
+    always @(*) begin
+        Expanded_Key_One         <=    Expanded_Key_One_wire;
+        Expanded_Key_Two         <=    Expanded_Key_Two_wire;
+        Expanded_Key_Three       <=    Expanded_Key_Three_wire;
+        Expanded_Key_Four        <=    Expanded_Key_Four_wire; 
+        Expanded_Key_Five        <=    Expanded_Key_Five_wire; 
+        Expanded_Key_Six         <=    Expanded_Key_Six_wire;
+        Expanded_Key_Seven       <=    Expanded_Key_Seven_wire; 
+        Expanded_Key_Eight       <=    Expanded_Key_Eight_wire; 
+        Expanded_Key_Nine        <=    Expanded_Key_Nine_wire; 
+        Expanded_Key_Ten         <=    Expanded_Key_Ten_wire;
+        Expanded_Key_Eleven      <=    Expanded_Key_Eleven_wire;
+        Expanded_Key_Twelve      <=    Expanded_Key_Twelve_wire;
+        Expanded_Key_Thirteen    <=    Expanded_Key_Thirteen_wire;
+        Expanded_Key_Fourteen    <=    Expanded_Key_Fourteen_wire;
+    
+    end
 
 endmodule
 

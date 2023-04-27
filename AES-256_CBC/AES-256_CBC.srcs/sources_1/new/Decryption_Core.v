@@ -23,10 +23,12 @@
 module Decryption_Core(
     input CLK,
     input start,
+    input key_start,
     input [127:0] Ciphertext,
     input [255:0] Key,
     output reg [127:0] Plaintext,
-    output reg finished
+    output reg finished,
+    output key_finished
     );
     
     //Key Expansion
@@ -34,23 +36,25 @@ module Decryption_Core(
     wire [127:0] keys [14:0]; // Fourteen key array + "round 0" key
     
     assign keys[0] = Key[255:128]; // Round 0 key is the first 16 bytes (4 columns) of the 32 byte array
-    tinyAES_keyexpansion KeyExpansion( // temp
-        .clk(CLK),
-        .key(key_input),
-        .Expanded_Key_One(keys[1]), 
-        .Expanded_Key_Two(keys[2]), 
-        .Expanded_Key_Three(keys[3]),
-        .Expanded_Key_Four(keys[4]), 
-        .Expanded_Key_Five(keys[5]),
-        .Expanded_Key_Six(keys[6]),
-        .Expanded_Key_Seven(keys[7]), 
-        .Expanded_Key_Eight(keys[8]),
-        .Expanded_Key_Nine(keys[9]), 
-        .Expanded_Key_Ten(keys[10]),
-        .Expanded_Key_Eleven(keys[11]),
-        .Expanded_Key_Twelve(keys[12]),
-        .Expanded_Key_Thirteen(keys[13]), 
-        .Expanded_Key_Fourteen(keys[14])
+    assign keys[1] = Key[127:0]; // Round 1 key is lower 16 bytes of original key
+    Key_Expansion KeyExpansion( // remaining keys
+        .RESET(key_start),
+        .CLK(CLK),
+        .Key(key_input),
+        .Expanded_Key_One(keys[2]), 
+        .Expanded_Key_Two(keys[3]), 
+        .Expanded_Key_Three(keys[4]),
+        .Expanded_Key_Four(keys[5]), 
+        .Expanded_Key_Five(keys[6]),
+        .Expanded_Key_Six(keys[7]),
+        .Expanded_Key_Seven(keys[8]), 
+        .Expanded_Key_Eight(keys[9]),
+        .Expanded_Key_Nine(keys[10]), 
+        .Expanded_Key_Ten(keys[11]),
+        .Expanded_Key_Eleven(keys[12]),
+        .Expanded_Key_Twelve(keys[13]),
+        .Expanded_Key_Thirteen(keys[14]), 
+        .Done(key_finished)
         );
     
     
@@ -63,25 +67,25 @@ module Decryption_Core(
     reg round_reset;
 
     // input keys in reverse order (e.g 14th key of encryption is "inv round 0", 13th is "inv round 1" key, etc)
-    Inv_thirteen_rounds Rounds (.CLK(CLK), 
-                            .initial_state(ciphertext_input),
-                            .reset(round_reset),
-                            .key1(keys[13]),
-                            .key2(keys[12]), 
-                            .key3(keys[11]), 
-                            .key4(keys[10]), 
-                            .key5(keys[9]), 
-                            .key6(keys[8]), 
-                            .key7(keys[7]), 
-                            .key8(keys[6]), 
-                            .key9(keys[5]), 
-                            .key10(keys[4]), 
-                            .key11(keys[3]), 
-                            .key12(keys[2]), 
-                            .key13(keys[1]),
-                            .final_state(thirteenth_state),
-                            .finished(thirteen_finished)
-                            );
+    Inv_thirteen_rounds Rounds (.CLK(CLK),
+                                .reset(round_reset), 
+                                .initial_state(ciphertext_input),
+                                .key1(keys[13]),
+                                .key2(keys[12]), 
+                                .key3(keys[11]), 
+                                .key4(keys[10]), 
+                                .key5(keys[9]), 
+                                .key6(keys[8]), 
+                                .key7(keys[7]), 
+                                .key8(keys[6]), 
+                                .key9(keys[5]), 
+                                .key10(keys[4]), 
+                                .key11(keys[3]), 
+                                .key12(keys[2]), 
+                                .key13(keys[1]),
+                                .final_state(thirteenth_state),
+                                .finished(thirteen_finished)
+                                );
      
     reg [127:0] finalRoundState;
     wire [127:0] finalRoundStateOut;
@@ -95,7 +99,7 @@ module Decryption_Core(
     
     initial begin
         CS <= S_WAIT;
-        finished <= 0;
+        finished <= 1;
     end
     
     
@@ -105,22 +109,33 @@ module Decryption_Core(
    
     
     always @(*) begin
-        key_input <= Key;
         case(CS)
             S_WAIT: 
             begin
-                if(start) begin
+                if (key_start) begin
+                    NS <= S_KEYS;
+                    key_input <= Key;
+                end else if(start) begin
                     NS <= S_DECRYPT;
                     ciphertext_input <= Ciphertext ^ keys[14];
                     round_reset <= 1;
-                    finished <= 0;
+                    finished <= 0; 
                 end else
                     NS <= S_WAIT;      
             end
             
+            S_KEYS:
+            begin
+                if(key_finished) begin
+                    NS <= S_WAIT;
+                end else begin
+                    NS <= S_KEYS;
+                end
+            end
+            
             S_DECRYPT: 
             begin
-                round_reset = 0;
+                round_reset <= 0;
                 if (thirteen_finished) begin
                     NS <= S_FINALROUND;
                     finalRoundState <= thirteenth_state;
@@ -130,9 +145,9 @@ module Decryption_Core(
 
             S_FINALROUND: 
             begin
+                NS <= S_WAIT;
                 Plaintext <= finalRoundStateOut;
                 finished <= 1;
-                NS <= S_WAIT;
             end
             
         endcase

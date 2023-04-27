@@ -23,44 +23,53 @@
 module Encryption_Core(
     input CLK,
     input start,
+    input key_start,
     input [127:0] Plaintext,
     input [255:0] Key,
     output reg [127:0] Ciphertext,
-    output reg finished
+    output reg finished,
+    output key_finished
     );
 
     //Key Expansion
     reg [255:0] key_input;
     wire [127:0] keys [14:0]; // Fourteen key array + "round 0" key
+
     
     assign keys[0] = Key[255:128]; // Round 0 key is the first 16 bytes (4 columns) of the 32 byte array
-    tinyAES_keyexpansion KeyExpansion( // temp
-        .clk(CLK),
-        .key(key_input),
-        .Expanded_Key_One(keys[1]), 
-        .Expanded_Key_Two(keys[2]), 
-        .Expanded_Key_Three(keys[3]),
-        .Expanded_Key_Four(keys[4]), 
-        .Expanded_Key_Five(keys[5]),
-        .Expanded_Key_Six(keys[6]),
-        .Expanded_Key_Seven(keys[7]), 
-        .Expanded_Key_Eight(keys[8]),
-        .Expanded_Key_Nine(keys[9]), 
-        .Expanded_Key_Ten(keys[10]),
-        .Expanded_Key_Eleven(keys[11]),
-        .Expanded_Key_Twelve(keys[12]),
-        .Expanded_Key_Thirteen(keys[13]), 
-        .Expanded_Key_Fourteen(keys[14])
+    assign keys[1] = Key[127:0]; // Round 1 key is lower 16 bytes of original key
+    Key_Expansion KeyExpansion( // remaining keys
+        .RESET(key_start),
+        .CLK(CLK),
+        .Key(key_input),
+        .Expanded_Key_One(keys[2]), 
+        .Expanded_Key_Two(keys[3]), 
+        .Expanded_Key_Three(keys[4]),
+        .Expanded_Key_Four(keys[5]), 
+        .Expanded_Key_Five(keys[6]),
+        .Expanded_Key_Six(keys[7]),
+        .Expanded_Key_Seven(keys[8]), 
+        .Expanded_Key_Eight(keys[9]),
+        .Expanded_Key_Nine(keys[10]), 
+        .Expanded_Key_Ten(keys[11]),
+        .Expanded_Key_Eleven(keys[12]),
+        .Expanded_Key_Twelve(keys[13]),
+        .Expanded_Key_Thirteen(keys[14]), 
+        .Done(key_finished)
         );
+    
 
     //reg key_gen_finished; // internal ctrl wire, used to block encryption until keygen finished
 
-    wire [127:0] thirteenth_state;
+    
     
 
     // Rounds
-    reg round_reset;
+    wire [127:0] thirteenth_state;
+    wire thirteen_finished;
     reg [127:0] plaintext_input;
+    reg round_reset;
+
     thirteen_rounds Rounds (.CLK(CLK),
                             .reset(round_reset),
                             .initial_state(plaintext_input),
@@ -94,32 +103,41 @@ module Encryption_Core(
     
     initial begin
         CS <= S_WAIT;
-        finished <= 0;
+        finished <= 1;
     end
-    
     
     always @(posedge CLK) begin
         CS <= NS;
     end
-   
     
     always @(*) begin
-        key_input <= Key;
         case(CS)
             S_WAIT: 
             begin
-                if(start) begin
+                if (key_start) begin
+                    NS <= S_KEYS;
+                    key_input <= Key;
+                end else if(start) begin
                     NS <= S_ENCRYPT;
                     plaintext_input <= Plaintext ^ keys[0];
                     round_reset <= 1;
-                    finished <= 0;
+                    finished <= 0; 
                 end else
                     NS <= S_WAIT;      
             end
             
+            S_KEYS:
+            begin
+                if(key_finished) begin
+                    NS <= S_WAIT;
+                end else begin
+                    NS <= S_KEYS;
+                end
+            end
+            
             S_ENCRYPT: 
             begin
-                round_reset = 0;
+                round_reset <= 0;
                 if (thirteen_finished) begin
                     NS <= S_FINALROUND;
                     finalRoundState <= thirteenth_state;
@@ -129,9 +147,9 @@ module Encryption_Core(
 
             S_FINALROUND: 
             begin
+                NS <= S_WAIT;
                 Ciphertext <= finalRoundStateOut;
                 finished <= 1;
-                NS <= S_WAIT;
             end
             
         endcase
@@ -186,19 +204,15 @@ module thirteen_rounds(
             roundKey <= keys[0];
         end
         else if ( i < 13 ) begin
-            
             i <= i + 1;
             roundState <= roundStateOut;
             roundKey <= keys[i];
         end
-        else if (i == 13) begin
+        else begin
             final_state <= roundStateOut;
             finished <= 1;
         end
     end
-
-    
-
 
 endmodule
 

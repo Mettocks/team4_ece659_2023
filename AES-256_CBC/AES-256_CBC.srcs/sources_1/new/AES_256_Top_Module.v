@@ -21,9 +21,31 @@
 
 
 module AES_256_Top_Module(
-    input [255:0] Key,
-    input [127:0] Text,
     input CLK,
-    output [127:0] Results
+    input [255:0] Key,
+    input Key_Start,
+    output Key_Finish,
+    
+    input [127:0] Plaintext_In,
+    input Enc_Start,
+    output Enc_Fin,
+    output [127:0] Ciphertext_Out,
+    
+    input [127:0] Ciphertext_In,
+    input Dec_Start,
+    output Dec_Fin,
+    output [127:0] Plaintext_Out
     );
+    
+    // Key_Expansion
+    Key_Expansion KeyExpansion(
+                                
+    
+                                );
+    
+    // Encryption Core
+    Encryption_Core EncryptionCore();
+    // Decryption Core
+    Decryption_Core DecryptionCore();
+    
 endmodule
