@@ -44,8 +44,8 @@ module AES_256_Top_Module(
                                 );
     
     // Encryption Core
-    Encryption_Core EncryptionCore();
+    Encryption_Core Cipher();
     // Decryption Core
-    Decryption_Core DecryptionCore();
+    Decryption_Core InvCipher();
     
 endmodule
