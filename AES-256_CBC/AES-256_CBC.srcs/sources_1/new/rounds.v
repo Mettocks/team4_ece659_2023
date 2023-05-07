@@ -61,8 +61,6 @@ module cipher_round(
         );
     
     /***** MixColumns init *****/
-    
-    
     reg [127:0] Mix_Input;
     wire [127:0] Mix_Output;
     mix_columns MixColumns(

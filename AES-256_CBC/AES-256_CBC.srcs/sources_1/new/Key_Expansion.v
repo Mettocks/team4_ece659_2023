@@ -46,8 +46,6 @@ module Key_Expansion(
     );
     
     //Declaring All Wires and Register Values
-   
-    wire CLK;
     
     reg Expansion_Complete;
   
