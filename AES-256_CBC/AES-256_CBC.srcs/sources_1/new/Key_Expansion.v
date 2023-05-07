@@ -18,7 +18,7 @@
 // Revision 1.0 - Finished preliminary testing and implementation on VCU-118 Xilinx FPGA. 4/23/2023 - Max Cohen Hoffing
 // Revision 1.1 - Cleaning Up Code and Commenting  
 // Additional Comments:
-// 
+// Expansion Module can use a faster clock. Tested with 100MHz clock with success using VCU118 FPGA
 //////////////////////////////////////////////////////////////////////////////////
 
 //Should we clock gate this module?
@@ -119,9 +119,9 @@ module Key_Expansion(
   
     always@(posedge CLK, posedge RESET) begin: main_module //Pulling in new Data for asynchronous RESET 
     
-    
         if (RESET) begin: pull_data // RESET and initialize circuit.
-               
+             
+            //Performing rotation when key is pulled in, icreasing throughput by 1 clock cycle   
             current_round_val[31:24] <= Key[23:16];
             current_round_val[23:16] <= Key[15:8];
             current_round_val[15:8] <= Key[7:0];
@@ -184,7 +184,7 @@ module Key_Expansion(
               
               else if (XOR_count == 4) begin: Mod_Eight_Four
               
-                  case(Key_State) 
+                  case(Key_State) //(Substitute --> XOR Operation)
                   
                         Rotate_Left_Or_Sub: begin 
                    
@@ -228,7 +228,7 @@ module Key_Expansion(
                 
               end: Mod_Eight_Four     
               
-              else begin: XOR_Word
+              else begin: XOR_Word //XOR Operation
               
                    if (XOR_count == 3 ) begin
                    
@@ -258,8 +258,7 @@ module Key_Expansion(
               end: XOR_Word
                  
            end: key_loop
-           
-           
+                      
            
            else begin: Write_Done
         
@@ -272,6 +271,8 @@ module Key_Expansion(
         
              
     end: main_module
+
+
 
 
 
