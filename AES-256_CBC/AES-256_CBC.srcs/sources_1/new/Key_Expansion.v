@@ -61,7 +61,7 @@ module Key_Expansion(
     reg [2:0] XOR_count, rcon_count;
     reg [1:0] Word_Select;
 
-    reg Upper_XOR;
+   // reg Upper_XOR;
     
     reg [31:0] current_round_val;
     
@@ -232,7 +232,7 @@ module Key_Expansion(
                    
                        Key_count <= Key_count + 1;
                        XOR_count <= XOR_count + 1;
-                       Upper_XOR <= 1; 
+                 //      Upper_XOR <= 1; 
                   
                    end
                   
@@ -240,7 +240,7 @@ module Key_Expansion(
                    
                        Key_count <= Key_count + 1; 
                        XOR_count <= 0;
-                       Upper_XOR <= 0;
+                  //     Upper_XOR <= 0;
                        
                    end   
                        
