@@ -37,10 +37,10 @@ module Decryption_Core(
     input [127:0] in_key11,
     input [127:0] in_key12,
     input [127:0] in_key13,
-    input [127:0] in_key14
+    input [127:0] in_key14,
     output reg [127:0] Plaintext,
     output reg finished,
-    output key_finished
+    output reg key_finished
     );
     
     //Key Expansion
