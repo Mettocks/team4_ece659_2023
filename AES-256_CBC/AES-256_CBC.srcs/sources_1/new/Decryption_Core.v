@@ -26,6 +26,7 @@ module Decryption_Core(
     input [127:0] Ciphertext,
     input [127:0] in_key0,
     input [127:0] in_key1,
+    input [127:0] in_key2,
     input [127:0] in_key3,
     input [127:0] in_key4,
     input [127:0] in_key5,
@@ -138,10 +139,7 @@ module Decryption_Core(
         case(CS)
             S_WAIT: 
             begin
-                if (key_start) begin
-                    NS <= S_KEYS;
-                    key_input <= Key;
-                end else if(start) begin
+                if(start) begin
                     NS <= S_DECRYPT;
                     ciphertext_input <= Ciphertext ^ keys[14];
                     round_reset <= 1;
