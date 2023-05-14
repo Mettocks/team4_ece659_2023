@@ -55,7 +55,7 @@ module AES_256_Top_Module(
     
     reg Encrypt_Key_Ready;
     reg Decrypt_Key_Ready;
-    reg Key_Start;
+   // reg Key_Start;
     wire Key_Finish;
     reg  Key_State;
     
