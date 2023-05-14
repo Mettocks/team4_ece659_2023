@@ -22,7 +22,6 @@
 module Encryption_Core(
     input CLK,
     input start,
-    input key_start,
     input [127:0] Plaintext,
     input [127:0] in_key0,
     input [127:0] in_key1,
@@ -40,8 +39,7 @@ module Encryption_Core(
     input [127:0] in_key13,
     input [127:0] in_key14,
     output reg [127:0] Ciphertext,
-    output reg finished,
-    output reg key_finished
+    output reg finished
     );
 
     //Key Expansion
@@ -64,28 +62,7 @@ module Encryption_Core(
     assign keys[12] = in_key12;
     assign keys[13] = in_key13;
     assign keys[14] = in_key14;
-    /*
-    Key_Expansion KeyExpansion( // remaining keys
-        .RESET(key_start),
-        .CLK(CLK),
-        .Key(key_input),
-        .Expanded_Key_One(keys[2]), 
-        .Expanded_Key_Two(keys[3]), 
-        .Expanded_Key_Three(keys[4]),
-        .Expanded_Key_Four(keys[5]), 
-        .Expanded_Key_Five(keys[6]),
-        .Expanded_Key_Six(keys[7]),
-        .Expanded_Key_Seven(keys[8]), 
-        .Expanded_Key_Eight(keys[9]),
-        .Expanded_Key_Nine(keys[10]), 
-        .Expanded_Key_Ten(keys[11]),
-        .Expanded_Key_Eleven(keys[12]),
-        .Expanded_Key_Twelve(keys[13]),
-        .Expanded_Key_Thirteen(keys[14]), 
-        .Done(key_finished)
-        );
-    
-    */
+
 
     // Rounds
     wire [127:0] thirteenth_state;
@@ -146,14 +123,14 @@ module Encryption_Core(
                     NS <= S_WAIT;      
             end
             
-            S_KEYS:
-            begin
-                if(key_finished) begin
-                    NS <= S_WAIT;
-                end else begin
-                    NS <= S_KEYS;
-                end
-            end
+            // S_KEYS:
+            // begin
+            //     if(key_finished) begin
+            //         NS <= S_WAIT;
+            //     end else begin
+            //         NS <= S_KEYS;
+            //     end
+            // end
             
             S_ENCRYPT: 
             begin
